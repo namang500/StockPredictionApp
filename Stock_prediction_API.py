@@ -209,7 +209,7 @@ def get_detail_page(company_name):
 
 
 if(__name__=="__main__"):
-    app.run(host='0.0.0.0', port=5002)
+    app.run()
     
 
 
