@@ -213,17 +213,3 @@ if(__name__=="__main__"):
     
 
 
-# In[118]:
-
-
-d =  [{'aa' : 'ff'} , {'aa' : 'ff'}]
-jsonify(d)
-
-
-# In[110]:
-
-
-hostname = socket.gethostname()    
-IPAddr = socket.gethostbyname(hostname)
-print(IPAddr)
-
