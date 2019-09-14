@@ -1,3 +1,9 @@
+
+# coding: utf-8
+
+# In[148]:
+
+
 from flask import  Flask , app , json , Request , Response , jsonify , request , redirect 
 import pandas as pd
 import numpy as np
@@ -6,9 +12,16 @@ import datetime
 import glob
 import pyodbc
 import time
+import socket    
+
+
+# In[149]:
 
 
 app = Flask(__name__)
+
+
+# In[156]:
 
 
 ## function definition
@@ -19,13 +32,15 @@ def time_warp():
     out: formatted datetime
     """
     ts = datetime.datetime.now().timestamp()
-    offset= 122380.0 
+    offset= 122380.0 + 34580.0
     display_time =int(ts - offset )
     display_time= datetime.datetime.fromtimestamp(display_time)
     display_time=display_time.strftime("%Y-%m-%d %H:%M:00")
     return str(display_time)
 
 
+
+# In[158]:
 
 
 class StockPrice():
@@ -38,8 +53,14 @@ class StockPrice():
     IMG_FILE_PATH = ""
     data_columns = list()
     
+    hostname = "" 
+    IPAddr = ""
     
     def __init__(self):
+        
+        self.hostname = socket.gethostname()    
+        self.IPAddr = socket.gethostbyname(self.hostname)
+        
         self.company_image_url_path = {
             "NSE_HDFCBANK" :"https://i.imgur.com/BRnZzIS.png",
             "NSE_COALINDIA":"https://i.imgur.com/0517oD4.png",
@@ -74,16 +95,26 @@ class StockPrice():
             
             company_name = file.split('.csv')[0]
             self.company_stock_data[company_name] = pd.read_csv(os.path.join(self.DATA_FILE_PATH , file) , index_col = 'date' )[self.data_columns].to_dict('index')
-                 
-sp = StockPrice()
-sp.__init__()
-sp.read_stock_data()
+            
+    
             
 
 
-@app.route('/index')
+# In[159]:
+
+
+sp = StockPrice()
+sp.__init__()
+sp.read_stock_data()
+
+
+# In[160]:
+
+
+@app.route('/')
 def test_api():
     return jsonify({"company_name" :   'company_name'})
+
 
 
 
@@ -111,12 +142,12 @@ def get_homepage():
                     "company_img_url" : str(sp.company_image_url_path[company_name]),
                     "company_current_price" : str(sp.company_stock_data[company_name][curr_time]['close']),
                     "company_stock_price_delta" : str(round(sp.company_stock_data[company_name][curr_time]['close'] - sp.company_stock_data[company_name][curr_time]['open'] , 2)), 
-                    "company_detailed_url" : "http://192.168.43.231:5002/detailpage/{}".format(company_name)
+                    "company_detailed_url" : "http://{}:5002/detailpage/{}".format(sp.IPAddr , company_name)
                             })
             
         except Exception:
             
-            fall_back_stock_detail = str(company_stock_detail)
+            fall_back_stock_detail = company_stock_detail
             fall_back_stock_detail['company_name'] = str(company_name)
             fall_back_stock_detail['company_id'] = str(i)
             fall_back_stock_detail["company_img_url"] = str(sp.company_image_url_path[company_name])
@@ -150,6 +181,49 @@ def get_detail_page(company_name):
     
     
     
+    
+
+
+# In[161]:
+
+
+# sp.company_stock_data['NSE_COALINDIA']
+# # curr_time = time_warp()
+# # date_list = [value for value in sp.company_stock_data['NSE_COALINDIA']]
+# # idx = [i for i, d in enumerate(date_list) if curr_time in date_list]
+
+# # stock_data_list = date_list[idx[0] : ][::-1]
+# # stock_data_list
+
+
+# In[162]:
+
+
+# for company_name in sp.company_stock_data.keys():
+#     for time in sp.company_stock_data[company_name].keys():
+#         print(sp.company_stock_data[company_name])
+#         break
+
+
+# In[ ]:
+
+
 if(__name__=="__main__"):
-    app.run()
-            
+    app.run(host='0.0.0.0', port=5002)
+    
+
+
+# In[118]:
+
+
+d =  [{'aa' : 'ff'} , {'aa' : 'ff'}]
+jsonify(d)
+
+
+# In[110]:
+
+
+hostname = socket.gethostname()    
+IPAddr = socket.gethostbyname(hostname)
+print(IPAddr)
+
